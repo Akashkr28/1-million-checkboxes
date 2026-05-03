@@ -139,6 +139,8 @@ function startCooldown(retryAfterMs = 5000) {
 
 function addActivity({ index, state, toggledBy, socketId: eventSocketId, at }) {
   if (!activityList) return;
+  const checkboxNumber = Number(index);
+  if (!Number.isInteger(checkboxNumber) || checkboxNumber < 0) return;
 
   const empty = activityList.querySelector('.activity-empty');
   if (empty) empty.remove();
@@ -152,7 +154,7 @@ function addActivity({ index, state, toggledBy, socketId: eventSocketId, at }) {
   item.innerHTML = `
     <span class="activity-dot ${Number(state) === 1 ? 'checked' : 'unchecked'}"></span>
     <span class="activity-copy">
-      <strong>${escapeHtml(actor)}</strong> ${action} <code>#${(Number(index) + 1).toLocaleString()}</code>
+      <strong>${escapeHtml(actor)}</strong> ${action} <code>#${(checkboxNumber + 1).toLocaleString()}</code>
       <small>${time}</small>
     </span>
   `;
@@ -378,7 +380,6 @@ function handleWSMessage(msg) {
         totalPages = Math.ceil(totalCheckboxes / PAGE_SIZE);
         updatePageInfo();
       }
-      addActivity(msg);
       break;
 
     case 'update': {
@@ -397,6 +398,7 @@ function handleWSMessage(msg) {
           setTimeout(() => cell.cell.classList.remove('flash'), 300);
         }
       }
+      addActivity(msg);
       break;
     }
 
