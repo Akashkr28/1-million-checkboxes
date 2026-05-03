@@ -165,8 +165,8 @@ Repeated violations increment `rate:ws:abuse:<userId>:<minute>`. If the abuse co
 
 ## Submission Links
 
-- Public GitHub repository: add your repository URL here
-- Live deployed app: add your deployed URL here if available
-- YouTube unlisted demo video: add your YouTube URL here
+- Public GitHub repository: https://github.com/Akashkr28/1-million-checkboxes
+- Live deployed app: https://million-checkboxes-xtg8.onrender.com/
+- YouTube unlisted demo video: https://youtu.be/iCQ8GMMoA7c
 
 The demo video should show login, grid loading, a checkbox toggle, and the same update appearing in two browser windows.
