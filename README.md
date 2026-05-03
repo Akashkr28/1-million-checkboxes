@@ -13,6 +13,7 @@ A real-time checkbox grid built with Node.js, Express, WebSockets and Redis. Use
 ## Features
 
 - Paged checkbox grid that renders 10,000 boxes at a time instead of pushing 1,000,000 DOM nodes into the browser.
+- Interactive landing page at `/` with the live checkbox field at `/app`.
 - Redis bitmap storage: `checkboxes:bits` stores one checkbox per bit, so 1,000,000 checkboxes use about 125 KB.
 - Atomic checkbox toggles with a Redis Lua script.
 - WebSocket event flow for `welcome`, `toggle`, `update`, `stats`, `ping` and `pong`.
@@ -57,7 +58,7 @@ cp .env.example .env
 npm start
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000).
+5. Open [http://localhost:3000](http://localhost:3000). The live grid is at `/app`.
 
 If `OIDC_ISSUER` is empty, `/auth/login` uses the built-in demo login so the real-time toggle flow can be tested locally without an identity provider.
 

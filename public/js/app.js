@@ -47,6 +47,7 @@ const loadingOverlay = document.getElementById('loading-overlay');
 const checkedCountEl = document.getElementById('checked-count');
 const usersCountEl  = document.getElementById('users-count');
 const wsDot         = document.querySelector('.ws-dot');
+const wsText        = document.querySelector('.ws-text');
 const progressFill  = document.getElementById('progress-fill');
 const authArea      = document.getElementById('auth-area');
 const authBanner    = document.getElementById('auth-banner');
@@ -59,6 +60,11 @@ const themeToggle   = document.getElementById('theme-toggle');
 const themeIcon     = document.querySelector('.theme-icon');
 const cooldownPill  = document.getElementById('cooldown-pill');
 const activityList  = document.getElementById('activity-list');
+const landingShell  = document.getElementById('landing-shell');
+const appShell      = document.getElementById('app-shell');
+const landingScene  = document.getElementById('landing-scene');
+
+const isAppPage = location.pathname === '/app';
 
 // ── Theme ────────────────────────────────────────────────────────────────────
 
@@ -162,6 +168,42 @@ function addActivity({ index, state, toggledBy, socketId: eventSocketId, at }) {
   activityList.prepend(item);
   while (activityList.children.length > 12) {
     activityList.lastElementChild.remove();
+  }
+}
+
+function buildLandingScene() {
+  if (!landingScene) return;
+
+  const frag = document.createDocumentFragment();
+  const totalTiles = 220;
+
+  for (let i = 0; i < totalTiles; i++) {
+    const tile = document.createElement('button');
+    tile.type = 'button';
+    tile.className = 'landing-tile';
+    tile.setAttribute('aria-label', `Preview checkbox ${i + 1}`);
+    if ((i * 7) % 11 < 4) tile.classList.add('active');
+    tile.style.setProperty('--delay', `${(i % 23) * 80}ms`);
+    tile.addEventListener('click', () => tile.classList.toggle('active'));
+    frag.appendChild(tile);
+  }
+
+  landingScene.innerHTML = '';
+  landingScene.appendChild(frag);
+}
+
+async function loadLandingStats() {
+  try {
+    const res = await fetch('/api/checkboxes/count');
+    if (!res.ok) return;
+    const data = await res.json();
+    checkedCountEl.textContent = Number(data.count).toLocaleString();
+    usersCountEl.textContent = '—';
+    if (progressFill) {
+      progressFill.style.width = `${Math.min(100, (Number(data.count) / totalCheckboxes) * 100)}%`;
+    }
+  } catch {
+    // Landing stats are decorative; the app page performs live updates.
   }
 }
 
@@ -368,6 +410,9 @@ function connectWS() {
 function setWSDot(state) {
   wsDot.className = `ws-dot ${state}`;
   wsDot.parentElement.title = `WebSocket: ${state}`;
+  if (wsText) {
+    wsText.textContent = state === 'preview' ? 'Preview' : 'Live';
+  }
 }
 
 function handleWSMessage(msg) {
@@ -497,9 +542,20 @@ window.addEventListener('resize', () => {
 
 async function init() {
   initTheme();
-  updateCooldownPill();
+  document.body.classList.toggle('is-landing', !isAppPage);
+  document.body.classList.toggle('is-app', isAppPage);
+
   await loadSystemInfo();
   await loadUser();
+
+  if (!isAppPage) {
+    buildLandingScene();
+    await loadLandingStats();
+    setWSDot('preview');
+    return;
+  }
+
+  updateCooldownPill();
   buildGrid();
   await goToPage(0);
   connectWS();

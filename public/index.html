@@ -8,13 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 </head>
-<body>
+<body class="is-landing">
   <header class="header">
     <div class="header-inner">
       <div class="brand">
         <span class="brand-mark">✓</span>
         <span class="brand-copy">
-          <span class="brand-title">1 Million Checkboxes</span>
+          <a class="brand-title" href="/">1 Million Checkboxes</a>
           <span class="brand-subtitle"><span class="brand-count">1,000,000</span> live cells</span>
         </span>
       </div>
@@ -50,7 +50,40 @@
     <button class="banner-close" onclick="document.getElementById('auth-banner').style.display='none'">✕</button>
   </div>
 
-  <main class="app-shell">
+  <main class="landing-shell" id="landing-shell">
+    <section class="landing-hero">
+      <div class="landing-scene" id="landing-scene" aria-hidden="true"></div>
+      <div class="landing-content">
+        <p class="eyebrow">Shared state at scale</p>
+        <h1>One grid. Many users. Every checkbox moves live.</h1>
+        <p class="landing-copy">
+          Explore a million-checkbox system with Redis bitmap storage, WebSockets, Pub/Sub coordination,
+          authentication, and custom abuse controls.
+        </p>
+        <div class="landing-actions">
+          <a class="btn btn-accent btn-large" href="/app">Enter checkbox field</a>
+          <a class="btn btn-ghost btn-large" href="/auth/login">Login first</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-strip" aria-label="System highlights">
+      <div>
+        <strong>Redis bitmap</strong>
+        <span>1 bit per checkbox</span>
+      </div>
+      <div>
+        <strong>WebSockets</strong>
+        <span>live cross-window updates</span>
+      </div>
+      <div>
+        <strong>Rate controls</strong>
+        <span>2 toggles then 5s cooldown</span>
+      </div>
+    </section>
+  </main>
+
+  <main class="app-shell" id="app-shell">
     <section class="overview">
       <div>
         <p class="eyebrow">Real-time grid</p>

@@ -10,7 +10,7 @@ router.get('/login', async (req, res) => {
     req.session.userEmail = 'demo@example.com';
     req.session.userName  = 'Demo User';
     await req.saveSession();
-    return res.redirect('/');
+    return res.redirect('/app');
   }
   try {
     const url = auth.getAuthorizationUrl(req.session);
@@ -31,7 +31,7 @@ router.get('/callback', async (req, res) => {
     req.session.accessToken = user.accessToken;
     delete req.session.oidcState;
     await req.saveSession();
-    res.redirect('/');
+    res.redirect('/app');
   } catch (err) {
     console.error('[Auth] Callback error:', err.message);
     res.redirect('/?error=auth_failed');
