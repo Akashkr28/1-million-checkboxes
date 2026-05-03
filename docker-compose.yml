@@ -1,0 +1,25 @@
+services:
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      REDIS_URL: redis://redis:6379
+      TOTAL_CHECKBOXES: 1000000
+      SESSION_SECRET: local-compose-secret-change-me
+      OIDC_REDIRECT_URI: http://localhost:3000/auth/callback
+      TOGGLE_BURST_LIMIT: 2
+      TOGGLE_COOLDOWN_MS: 5000
+    depends_on:
+      - redis
+
+volumes:
+  redis-data:

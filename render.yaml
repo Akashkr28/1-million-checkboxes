@@ -1,0 +1,58 @@
+services:
+  - type: keyvalue
+    name: million-checkboxes-redis
+    plan: free
+    region: singapore
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+
+  - type: web
+    name: million-checkboxes
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TOTAL_CHECKBOXES
+        value: 1000000
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: million-checkboxes-redis
+          property: connectionString
+      - key: SESSION_SECRET
+        sync: false
+      - key: SESSION_COOKIE_NAME
+        value: omc_sid
+      - key: SESSION_TTL_SECONDS
+        value: 604800
+      - key: OIDC_ISSUER
+        sync: false
+      - key: OIDC_CLIENT_ID
+        sync: false
+      - key: OIDC_CLIENT_SECRET
+        sync: false
+      - key: OIDC_REDIRECT_URI
+        sync: false
+      - key: OIDC_SCOPE
+        value: openid email profile
+      - key: HTTP_RATE_WINDOW_MS
+        value: 60000
+      - key: HTTP_RATE_MAX
+        value: 120
+      - key: WS_RATE_WINDOW_MS
+        value: 10000
+      - key: WS_RATE_MAX_PER_USER
+        value: 40
+      - key: WS_RATE_MAX_PER_SOCKET
+        value: 25
+      - key: WS_BAN_AFTER
+        value: 90
+      - key: WS_BAN_SECONDS
+        value: 60
+      - key: TOGGLE_BURST_LIMIT
+        value: 2
+      - key: TOGGLE_COOLDOWN_MS
+        value: 5000

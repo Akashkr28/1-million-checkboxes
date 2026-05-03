@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1,000,000 Checkboxes</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-mark">✓</span>
+        <span class="brand-copy">
+          <span class="brand-title">1 Million Checkboxes</span>
+          <span class="brand-subtitle"><span class="brand-count">1,000,000</span> live cells</span>
+        </span>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-pill" id="stat-checked">
+          <span class="stat-num" id="checked-count">—</span>
+          <span class="stat-label">checked</span>
+        </div>
+        <div class="stat-pill" id="stat-users">
+          <span class="stat-num" id="users-count">—</span>
+          <span class="stat-label">online</span>
+        </div>
+        <div class="ws-indicator" id="ws-indicator" title="WebSocket status">
+          <span class="ws-dot"></span>
+          <span class="ws-text">Live</span>
+        </div>
+      </div>
+
+      <div class="header-auth" id="auth-area">
+      </div>
+
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Toggle theme">
+        <span class="theme-icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </header>
+
+  <div id="toast-container" aria-live="polite"></div>
+
+  <div class="auth-banner" id="auth-banner" style="display:none;">
+    <span>You are browsing as a guest. <a href="/auth/login">Log in</a> to toggle checkboxes.</span>
+    <button class="banner-close" onclick="document.getElementById('auth-banner').style.display='none'">✕</button>
+  </div>
+
+  <main class="app-shell">
+    <section class="overview">
+      <div>
+        <p class="eyebrow">Real-time grid</p>
+        <h1>Toggle boxes with everyone connected.</h1>
+      </div>
+      <div class="progress-card">
+        <span class="progress-label">Checked density</span>
+        <div class="progress-track">
+          <span class="progress-fill" id="progress-fill"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar" aria-label="Grid navigation">
+      <div class="toolbar-group">
+        <button class="btn btn-ghost" id="btn-prev" disabled>Previous</button>
+        <button class="btn btn-ghost" id="btn-next" disabled>Next</button>
+      </div>
+      <span class="page-info" id="page-info">Loading...</span>
+      <div class="toolbar-group jump-group">
+        <span class="cooldown-pill" id="cooldown-pill">Ready to toggle</span>
+        <button class="btn btn-ghost" id="btn-jump">Jump</button>
+        <input
+          type="number"
+          id="jump-input"
+          class="jump-input"
+          min="1"
+          max="1000000"
+          placeholder="Index"
+          style="display:none;"
+        />
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="grid-panel">
+        <div class="grid-panel-header">
+          <div>
+            <span class="panel-title">Checkbox field</span>
+            <span class="panel-meta">10,000 visible per page</span>
+          </div>
+        </div>
+
+        <div class="grid-container">
+          <div class="loading-overlay" id="loading-overlay">
+            <div class="loader"></div>
+            <p>Loading checkboxes...</p>
+          </div>
+          <div id="checkbox-grid" class="checkbox-grid" role="group" aria-label="Checkbox grid"></div>
+        </div>
+      </div>
+
+      <aside class="activity-panel" aria-label="Recent activity">
+        <div class="activity-header">
+          <span class="panel-title">Live activity</span>
+          <span class="panel-meta">Recent toggles</span>
+        </div>
+        <ol class="activity-list" id="activity-list">
+          <li class="activity-empty">No checkbox updates yet.</li>
+        </ol>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Built with Node.js · Redis · WebSockets · OIDC</span>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
