@@ -2,6 +2,9 @@ import { createClient, RESP_TYPES } from 'redis';
 
 const CHECKBOX_KEY = 'checkboxes:bits';
 const PUBSUB_CHANNEL = 'checkbox:updates';
+const ACTIVITY_KEY = 'checkboxes:activity';
+const TOGGLE_COUNT_KEY = 'checkboxes:toggle_count';
+const ACTIVITY_LIMIT = parseInt(process.env.ACTIVITY_LIMIT || '50', 10);
 export const TOTAL = parseInt(process.env.TOTAL_CHECKBOXES || '1000000', 10);
 
 let publisher = null;
@@ -69,6 +72,52 @@ export async function publishUpdate(payload) {
   await publisher.publish(PUBSUB_CHANNEL, JSON.stringify(payload));
 }
 
+export async function recordActivity(payload) {
+  const entry = JSON.stringify(payload);
+  const multi = publisher.multi();
+  multi.lPush(ACTIVITY_KEY, entry);
+  multi.lTrim(ACTIVITY_KEY, 0, ACTIVITY_LIMIT - 1);
+  multi.incr(TOGGLE_COUNT_KEY);
+  await multi.exec();
+}
+
+export async function getRecentActivity(limit = ACTIVITY_LIMIT) {
+  const rows = await publisher.lRange(ACTIVITY_KEY, 0, Math.max(0, limit - 1));
+  return rows
+    .map((row) => {
+      try { return JSON.parse(row); }
+      catch { return null; }
+    })
+    .filter(Boolean);
+}
+
+export async function getTotalToggles() {
+  const raw = await publisher.get(TOGGLE_COUNT_KEY);
+  return raw ? parseInt(raw, 10) : 0;
+}
+
+export async function getRedisStats() {
+  const [pong, dbSize, info] = await Promise.all([
+    publisher.ping(),
+    publisher.dbSize(),
+    publisher.info('memory'),
+  ]);
+
+  const usedMemory = info
+    .split('\r\n')
+    .find((line) => line.startsWith('used_memory_human:'))
+    ?.split(':')[1] || 'unknown';
+
+  return {
+    status: pong === 'PONG' ? 'connected' : 'unknown',
+    dbSize,
+    usedMemory,
+    checkboxKey: CHECKBOX_KEY,
+    pubsubChannel: PUBSUB_CHANNEL,
+    activityLimit: ACTIVITY_LIMIT,
+  };
+}
+
 export async function rateLimitIncr(key, windowMs) {
   const multi = publisher.multi();
   multi.incr(key);
@@ -99,4 +148,4 @@ export function getPublisher() {
   return publisher;
 }
 
-export { CHECKBOX_KEY };
+export { CHECKBOX_KEY, ACTIVITY_KEY, PUBSUB_CHANNEL };

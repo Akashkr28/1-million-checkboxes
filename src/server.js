@@ -11,6 +11,7 @@ import * as wsHandler from './services/wsHandler.js';
 import { sessionMiddleware } from './services/sessionService.js';
 import authRoutes from './routes/authRoutes.js';
 import checkboxRoutes from './routes/checkboxRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -29,9 +30,25 @@ app.use(auth.sessionAuth);
 
 app.use('/auth', authRoutes);
 app.use('/api/checkboxes', checkboxRoutes);
+app.use('/api/admin', adminRoutes);
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', connected: wsHandler.getConnectedCount() });
+app.get('/health', async (_req, res) => {
+  try {
+    const redisStats = await redis.getRedisStats();
+    res.json({
+      status: 'ok',
+      connected: wsHandler.getConnectedCount(),
+      websockets: wsHandler.getConnectionStats(),
+      redis: {
+        status: redisStats.status,
+        dbSize: redisStats.dbSize,
+        usedMemory: redisStats.usedMemory,
+      },
+      uptimeSeconds: Math.floor(process.uptime()),
+    });
+  } catch {
+    res.status(503).json({ status: 'error', connected: wsHandler.getConnectedCount() });
+  }
 });
 
 app.get(/.*/, (_req, res) => {

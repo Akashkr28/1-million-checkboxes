@@ -63,8 +63,19 @@ const activityList  = document.getElementById('activity-list');
 const landingShell  = document.getElementById('landing-shell');
 const appShell      = document.getElementById('app-shell');
 const landingScene  = document.getElementById('landing-scene');
+const adminChecked  = document.getElementById('admin-checked');
+const adminCheckedPercent = document.getElementById('admin-checked-percent');
+const adminToggles  = document.getElementById('admin-toggles');
+const adminSockets  = document.getElementById('admin-sockets');
+const adminSocketSplit = document.getElementById('admin-socket-split');
+const adminRedis    = document.getElementById('admin-redis');
+const adminRedisMemory = document.getElementById('admin-redis-memory');
+const adminSystemList = document.getElementById('admin-system-list');
+const adminActivityList = document.getElementById('admin-activity-list');
 
 const isAppPage = location.pathname === '/app';
+const isAdminPage = location.pathname === '/admin';
+const isLandingPage = !isAppPage && !isAdminPage;
 
 // ── Theme ────────────────────────────────────────────────────────────────────
 
@@ -143,12 +154,13 @@ function startCooldown(retryAfterMs = 5000) {
   }
 }
 
-function addActivity({ index, state, toggledBy, socketId: eventSocketId, at }) {
-  if (!activityList) return;
+function addActivity(event, targetList = activityList) {
+  const { index, state, toggledBy, socketId: eventSocketId, at } = event;
+  if (!targetList) return;
   const checkboxNumber = Number(index);
   if (!Number.isInteger(checkboxNumber) || checkboxNumber < 0) return;
 
-  const empty = activityList.querySelector('.activity-empty');
+  const empty = targetList.querySelector('.activity-empty');
   if (empty) empty.remove();
 
   const item = document.createElement('li');
@@ -165,10 +177,16 @@ function addActivity({ index, state, toggledBy, socketId: eventSocketId, at }) {
     </span>
   `;
 
-  activityList.prepend(item);
-  while (activityList.children.length > 12) {
-    activityList.lastElementChild.remove();
+  targetList.prepend(item);
+  while (targetList.children.length > 12) {
+    targetList.lastElementChild.remove();
   }
+}
+
+function renderActivityHistory(events = [], targetList = activityList) {
+  if (!targetList) return;
+  targetList.innerHTML = '<li class="activity-empty">No checkbox updates yet.</li>';
+  events.slice().reverse().forEach((event) => addActivity(event, targetList));
 }
 
 function buildLandingScene() {
@@ -204,6 +222,37 @@ async function loadLandingStats() {
     }
   } catch {
     // Landing stats are decorative; the app page performs live updates.
+  }
+}
+
+async function loadAdminMetrics() {
+  if (!isAdminPage) return;
+  try {
+    const res = await fetch('/api/admin/metrics');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    adminChecked.textContent = Number(data.checkboxes.checkedCount).toLocaleString();
+    adminCheckedPercent.textContent = `${data.checkboxes.checkedPercent}% checked`;
+    adminToggles.textContent = Number(data.checkboxes.totalToggles).toLocaleString();
+    adminSockets.textContent = Number(data.websockets.total).toLocaleString();
+    adminSocketSplit.textContent = `${data.websockets.authenticated} auth · ${data.websockets.anonymous} guest`;
+    adminRedis.textContent = data.redis.status;
+    adminRedisMemory.textContent = `${data.redis.usedMemory} · ${data.redis.dbSize} keys`;
+
+    adminSystemList.innerHTML = `
+      <div><dt>Uptime</dt><dd>${Number(data.app.uptimeSeconds).toLocaleString()}s</dd></div>
+      <div><dt>Total checkboxes</dt><dd>${Number(data.app.totalCheckboxes).toLocaleString()}</dd></div>
+      <div><dt>Redis bitmap key</dt><dd>${escapeHtml(data.redis.checkboxKey)}</dd></div>
+      <div><dt>Pub/Sub channel</dt><dd>${escapeHtml(data.redis.pubsubChannel)}</dd></div>
+      <div><dt>Toggle cooldown</dt><dd>${data.rateLimits.toggleBurstLimit} toggles / ${data.rateLimits.toggleCooldownMs / 1000}s</dd></div>
+      <div><dt>WS user limit</dt><dd>${data.rateLimits.wsMaxPerUser} per ${data.rateLimits.wsWindowMs / 1000}s</dd></div>
+    `;
+
+    renderActivityHistory(data.recentActivity || [], adminActivityList);
+  } catch (err) {
+    toast('Unable to load admin metrics.', 'error');
+    console.error(err);
   }
 }
 
@@ -425,6 +474,7 @@ function handleWSMessage(msg) {
         totalPages = Math.ceil(totalCheckboxes / PAGE_SIZE);
         updatePageInfo();
       }
+      renderActivityHistory(msg.recentActivity || []);
       break;
 
     case 'update': {
@@ -438,9 +488,9 @@ function handleWSMessage(msg) {
         const cell  = gridCells[localIdx];
         if (cell) {
           cell.input.checked = state === 1;
-          // Brief flash animation
-          cell.cell.classList.add('flash');
-          setTimeout(() => cell.cell.classList.remove('flash'), 300);
+          const flashClass = msg.socketId === socketId ? 'flash-own' : 'flash-remote';
+          cell.cell.classList.add(flashClass);
+          setTimeout(() => cell.cell.classList.remove(flashClass), 420);
         }
       }
       addActivity(msg);
@@ -542,11 +592,19 @@ window.addEventListener('resize', () => {
 
 async function init() {
   initTheme();
-  document.body.classList.toggle('is-landing', !isAppPage);
+  document.body.classList.toggle('is-landing', isLandingPage);
   document.body.classList.toggle('is-app', isAppPage);
+  document.body.classList.toggle('is-admin', isAdminPage);
 
   await loadSystemInfo();
   await loadUser();
+
+  if (isAdminPage) {
+    setWSDot('preview');
+    await loadAdminMetrics();
+    setInterval(loadAdminMetrics, 5000);
+    return;
+  }
 
   if (!isAppPage) {
     buildLandingScene();

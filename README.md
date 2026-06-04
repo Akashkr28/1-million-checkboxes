@@ -23,6 +23,9 @@ A real-time checkbox grid built with Node.js, Express, WebSockets and Redis. Use
 - Custom WebSocket spam protection by socket ID and user ID, with temporary Redis-backed bans.
 - Visible 5 second toggle cooldown after two quick checkbox changes.
 - Live activity feed showing recent checkbox updates across connected clients.
+- Redis-persisted recent activity replay for newly connected clients.
+- Admin metrics dashboard at `/admin`.
+- Different visual highlights for your own updates and remote user updates.
 - Redis-backed signed-cookie sessions so auth also works during WebSocket upgrade.
 - Docker Compose setup for Node.js and Redis.
 
@@ -124,6 +127,7 @@ https://your-render-app.onrender.com/auth/callback
 - `WS_RATE_WINDOW_MS`, `WS_RATE_MAX_PER_USER`, `WS_RATE_MAX_PER_SOCKET`: WebSocket limiter settings
 - `WS_BAN_AFTER`, `WS_BAN_SECONDS`: temporary abuse restriction settings
 - `TOGGLE_BURST_LIMIT`, `TOGGLE_COOLDOWN_MS`: allows 2 quick toggles, then enforces a 5 second cooldown by default
+- `ACTIVITY_LIMIT`: number of recent checkbox updates retained in Redis
 
 ## Auth Flow
 
@@ -141,6 +145,7 @@ The WebSocket upgrade reads the same signed session cookie and loads the session
 6. Server publishes the update on Redis Pub/Sub.
 7. Every server instance receives the Pub/Sub message and broadcasts `{ "type": "update", "index": 123, "state": 1 }` to connected clients.
 8. The frontend updates the visible checkbox and appends the event to the live activity feed.
+9. The server keeps recent updates in a Redis list, so newly connected clients and the admin dashboard can replay recent activity.
 
 ## Rate Limiting Logic
 
@@ -162,6 +167,8 @@ Repeated violations increment `rate:ws:abuse:<userId>:<minute>`. If the abuse co
 - `session:<sessionId>`: authenticated session payload
 - `rate:*`: HTTP and WebSocket rate-limit counters
 - `ban:user:<userId>`: temporary abuse restriction
+- `checkboxes:activity`: Redis list of recent checkbox updates
+- `checkboxes:toggle_count`: total accepted toggle counter
 
 ## Submission Links
 

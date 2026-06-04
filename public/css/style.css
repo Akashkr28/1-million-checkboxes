@@ -400,8 +400,19 @@ body {
 }
 
 body.is-landing .app-shell,
-body.is-app .landing-shell {
+body.is-landing .admin-shell,
+body.is-app .landing-shell,
+body.is-app .admin-shell,
+body.is-admin .landing-shell,
+body.is-admin .app-shell {
   display: none;
+}
+
+.admin-shell {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 34px 24px 24px;
+  flex: 1;
 }
 
 .landing-hero {
@@ -846,6 +857,91 @@ body.is-app .landing-shell {
   font-weight: 750;
 }
 
+.metric-card {
+  min-height: 138px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: grid;
+  align-content: space-between;
+  gap: 16px;
+}
+
+.metric-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.metric-card strong {
+  font-family: var(--font-mono);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.metric-card small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 16px;
+  align-items: start;
+}
+
+.admin-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.system-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+.system-list div {
+  border-bottom: 1px solid var(--line);
+  padding: 16px 18px;
+}
+
+.system-list div:nth-child(odd) {
+  border-right: 1px solid var(--line);
+}
+
+.system-list dt {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.system-list dd {
+  margin-top: 6px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.admin-activity-list {
+  max-height: 520px;
+}
+
 @keyframes activityIn {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -933,9 +1029,14 @@ body.is-app .landing-shell {
   z-index: 2;
 }
 
-.cb-cell.flash label {
+.cb-cell.flash-own label {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.2);
+}
+
+.cb-cell.flash-remote label {
   border-color: #0f766e;
-  box-shadow: 0 0 0 5px rgba(15, 118, 110, 0.14);
+  box-shadow: 0 0 0 5px rgba(15, 118, 110, 0.18);
 }
 
 .cb-cell.readonly label {
@@ -1121,6 +1222,11 @@ body.is-app .landing-shell {
     grid-template-columns: 1fr;
   }
 
+  .admin-grid,
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
   .activity-panel {
     position: static;
   }
@@ -1202,5 +1308,13 @@ body.is-app .landing-shell {
   .grid-panel-header,
   .grid-container {
     padding: 14px;
+  }
+
+  .system-list {
+    grid-template-columns: 1fr;
+  }
+
+  .system-list div:nth-child(odd) {
+    border-right: 0;
   }
 }

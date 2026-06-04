@@ -40,11 +40,12 @@ export function init(httpServer) {
     });
   });
 
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', async (ws, req) => {
     const socketId = randomUUID();
     const session  = req.session || {};
     const userId   = session.userId   || null;
     const userName = session.userName || 'Anonymous';
+    const recentActivity = await redis.getRecentActivity(12);
 
     clients.set(socketId, { ws, userId, userName, connectedAt: Date.now() });
 
@@ -55,6 +56,7 @@ export function init(httpServer) {
       userName,
       total:       redis.TOTAL,
       isAnonymous: !userId,
+      recentActivity,
     });
 
     ws.on('message', async (raw) => {
@@ -126,7 +128,7 @@ async function handleMessage(socketId, ws, msg) {
       }
       try {
         const newState = await redis.toggleCheckbox(index);
-        await redis.publishUpdate({
+        const update = {
           type:      'update',
           index,
           state:     newState,
@@ -134,7 +136,9 @@ async function handleMessage(socketId, ws, msg) {
           toggledById: client.userId,
           socketId,
           at: Date.now(),
-        });
+        };
+        await redis.recordActivity(update);
+        await redis.publishUpdate(update);
         if (limit.cooldownAfterMs) {
           send(ws, {
             type: 'cooldown',
@@ -163,4 +167,25 @@ async function broadcastStats() {
 
 export function getConnectedCount() {
   return clients.size;
+}
+
+export function getConnectionStats() {
+  let authenticated = 0;
+  let anonymous = 0;
+  let oldestConnectionAt = null;
+
+  for (const client of clients.values()) {
+    if (client.userId) authenticated += 1;
+    else anonymous += 1;
+    if (!oldestConnectionAt || client.connectedAt < oldestConnectionAt) {
+      oldestConnectionAt = client.connectedAt;
+    }
+  }
+
+  return {
+    total: clients.size,
+    authenticated,
+    anonymous,
+    oldestConnectionAt,
+  };
 }

@@ -63,6 +63,7 @@
         <div class="landing-actions">
           <a class="btn btn-accent btn-large" href="/app">Enter checkbox field</a>
           <a class="btn btn-ghost btn-large" href="/auth/login">Login first</a>
+          <a class="btn btn-ghost btn-large" href="/admin">View admin dashboard</a>
         </div>
       </div>
     </section>
@@ -145,6 +146,59 @@
           <li class="activity-empty">No checkbox updates yet.</li>
         </ol>
       </aside>
+    </section>
+  </main>
+
+  <main class="admin-shell" id="admin-shell">
+    <section class="overview">
+      <div>
+        <p class="eyebrow">Operations</p>
+        <h1>Admin metrics for the live grid.</h1>
+      </div>
+      <a class="btn btn-accent btn-large" href="/app">Open grid</a>
+    </section>
+
+    <section class="admin-grid" aria-label="Admin metrics">
+      <article class="metric-card">
+        <span class="metric-label">Checked boxes</span>
+        <strong id="admin-checked">—</strong>
+        <small id="admin-checked-percent">—</small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Total toggles</span>
+        <strong id="admin-toggles">—</strong>
+        <small>persisted in Redis</small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Sockets</span>
+        <strong id="admin-sockets">—</strong>
+        <small id="admin-socket-split">—</small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Redis</span>
+        <strong id="admin-redis">—</strong>
+        <small id="admin-redis-memory">—</small>
+      </article>
+    </section>
+
+    <section class="admin-layout">
+      <article class="admin-panel">
+        <div class="activity-header">
+          <span class="panel-title">System details</span>
+          <span class="panel-meta">Live backend state</span>
+        </div>
+        <dl class="system-list" id="admin-system-list"></dl>
+      </article>
+
+      <article class="admin-panel">
+        <div class="activity-header">
+          <span class="panel-title">Recent Redis activity</span>
+          <span class="panel-meta">Stored server-side</span>
+        </div>
+        <ol class="activity-list admin-activity-list" id="admin-activity-list">
+          <li class="activity-empty">No persisted activity yet.</li>
+        </ol>
+      </article>
     </section>
   </main>
 

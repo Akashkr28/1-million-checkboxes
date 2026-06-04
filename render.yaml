@@ -56,3 +56,5 @@ services:
         value: 2
       - key: TOGGLE_COOLDOWN_MS
         value: 5000
+      - key: ACTIVITY_LIMIT
+        value: 50
